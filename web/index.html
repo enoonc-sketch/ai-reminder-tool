@@ -1,0 +1,279 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>安心提醒 EasyCare</title><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#F5F5F7">
+<style>
+:root{--bg:#F5F5F7;--ink:#1D1D1F;--sub:#6E6E73;--g:#007AFF;--card:#fff;--line:#E5E5EA;--red:#FF3B30;--green:#34C759;--orange:#FF9F0A;--fs:1}
+body.hc{--bg:#000;--ink:#fff;--sub:#ddd;--g:#FFD60A;--card:#111;--line:#fff}
+*{box-sizing:border-box}html{font-size:calc(18px*var(--fs))}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom))}
+main{max-width:720px;margin:0 auto;padding:16px}
+h1{font-size:1.7rem;margin:.3em 0}h2{font-size:1.2rem;margin:1.2em 0 .4em}
+.next{background:var(--g);color:#fff;border-radius:20px;padding:20px}body.hc .next{color:#000}
+.next b{font-size:3rem;display:block}
+.item{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:16px;padding:16px;margin:12px 0;min-height:72px;cursor:pointer}
+.item .t{font-size:1.6rem;font-weight:700;min-width:4.2em}.item .n{flex:1}.item small{color:var(--sub);display:block}
+.st{font-size:.9rem;padding:4px 10px;border-radius:99px;border:2px solid var(--line)}.st.done{background:#D9F7E3;color:#1E7A34}.st.missed{background:#FFE9E7;color:var(--red)}
+button,select,input,textarea{font:inherit;color:inherit}
+button{min-height:60px;padding:0 22px;border-radius:14px;border:2px solid var(--g);background:var(--card);font-weight:700;cursor:pointer}
+button.p{background:var(--g);color:#fff}body.hc button.p{color:#000}button.d{border-color:var(--red);color:var(--red)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:4px solid #007AFF;outline-offset:2px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;border-radius:0;min-height:68px;background:none}nav button.on{color:var(--g);box-shadow:inset 0 4px var(--g)}
+label{display:block;margin:12px 0 4px;font-weight:700}input,select,textarea{width:100%;min-height:56px;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.days label{display:inline-flex;align-items:center;gap:4px;margin:4px 8px 4px 0;font-weight:400}.days input{width:24px;min-height:24px}
+#alert{position:fixed;inset:0;background:var(--c);color:#fff;display:none;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px;z-index:9;gap:14px}
+#alert.on{display:flex}#alert .big{font-size:4.5rem;font-weight:800}#alert .ti{font-size:3rem;font-weight:800}#alert p{font-size:1.6rem;margin:0}
+#alert button{min-width:min(420px,90vw);min-height:84px;font-size:1.8rem;background:#fff;color:#111;border-color:#fff}
+.chips button{min-height:56px;padding:0 14px}.chips button.on{background:var(--g);color:#fff}
+.tm{font-size:2.4rem!important;min-height:80px!important;text-align:center;font-weight:700}
+details{margin-top:18px;border-top:1px solid var(--line);padding-top:8px}summary{font-weight:700;padding:14px 0;cursor:pointer;min-height:56px}
+.call{display:flex;align-items:center;justify-content:center;min-height:64px;padding:0 20px;border:2px solid var(--g);border-radius:14px;color:var(--g);font-weight:700;text-decoration:none}
+dialog{border:2px solid var(--g);border-radius:16px;padding:20px;background:var(--card);color:var(--ink);max-width:90vw}
+body.big button{min-height:88px;font-size:1.25rem}body.big nav button{min-height:100px}body.big input,body.big select{min-height:76px}body.big .item{min-height:96px}
+@keyframes fl{0%,49.9%{background:var(--c);color:#fff}50%,100%{background:#fff;color:#111}}#alert.fl{animation:fl 1s steps(1) infinite}#alert.fl button{border:3px solid #111}
+#toast{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;background:var(--g);color:#fff;padding:16px;border-radius:14px;font-size:1.3rem;font-weight:700;z-index:20;display:none;text-align:center}body.hc #toast{color:#000}.st.help{background:#fde1df;color:var(--red)}
+.back{border:0;background:none;color:var(--g);padding:0;min-height:48px}.empty button{margin-top:12px}.empty{padding:24px;text-align:center;color:var(--sub);border:2px dashed var(--line);border-radius:14px}
+</style></head><body>
+<main id="app"></main>
+<nav><button data-v="today">今天</button><button data-v="edit">＋ 添加</button><button data-v="aac" id="navaac">沟通</button><button data-v="more">更多</button></nav>
+<dialog id="pd"><label for="pin">家人密码</label><input id="pin" type="password" inputmode="numeric" maxlength="8"><p id="perr" style="color:var(--red);min-height:1.5em"></p><div class="row"><button class="p" id="pok">确定</button><button id="pno">取消</button></div></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="alert" role="alertdialog" aria-live="assertive"><div class="p1"></div><div class="big"></div><div class="ti"></div><p class="no"></p><p id="vh" style="font-size:1.1rem;opacity:.85;margin:0"></p><p id="vt" style="font-size:1.3rem;min-height:1.6em;margin:0"></p>
+<button id="ok">我已经完成</button><button id="sn">10 分钟后再提醒</button></div>
+<script>
+const $=s=>document.querySelector(s),CATS={med:['服药','#FF3B30'],meal:['吃饭喝水','#FF9F0A'],move:['运动活动','#007AFF'],life:['生活事务','#5856D6']};
+const L=(k,d)=>{try{return JSON.parse(localStorage.getItem('ec_'+k))??d}catch{return d}},S=(k,v)=>{try{localStorage.setItem('ec_'+k,JSON.stringify(v))}catch(e){alert('存储空间不足，请删除部分录音')}};
+let R=L('r',[]),LG=L('log',{}),FM=L('fam',[]),DEL=L('del',[]),ST=L('set',{fs:1,hc:false,rate:.85,vol:1,gap:2,timeout:15}),view='today',editId=null,active=null,rec=null;ST.ai=ST.ai||{url:'',key:'',model:''};ST.sv=ST.sv||{url:/^https?:/.test(location.protocol)?location.origin:'',code:'',ts:0};ST.phr=ST.phr||['我要喝水','我饿了','我想上厕所','我不舒服','请帮我拿药','请扶我一下','我想休息','谢谢'];ST.qs=ST.qs||'22:00';ST.qe=ST.qe||'07:00';
+const pad=n=>String(n).padStart(2,'0'),ds=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const WD='日一二三四五六';
+/* 首次打开载入 5 条日常安排，之后可自由修改删除；只在从未载入且列表为空时执行一次 */
+if(!localStorage.getItem('ec_seeded')&&R.length===0){const t0=ds(new Date());
+ R=[{id:'seed-breakfast',title:'吃早餐',time:'08:00',cat:'meal',note:'按时吃早餐，记得喝一杯温水。',rep:{t:'daily'},upd:Date.now(),start:t0},
+ {id:'seed-med',title:'吃药',time:'09:00',cat:'med',note:'请按照医生给您的用药安排进行服药。',imp:true,rep:{t:'daily'},upd:Date.now(),start:t0},
+ {id:'seed-walk',title:'散步活动',time:'10:00',cat:'move',note:'出门走一走，活动一下身体。',rep:{t:'daily'},upd:Date.now(),start:t0},
+ {id:'seed-lunch',title:'午餐时间',time:'12:00',cat:'meal',note:'按时吃午餐。',rep:{t:'daily'},upd:Date.now(),start:t0},
+ {id:'seed-rest',title:'准备休息',time:'21:00',cat:'life',note:'准备休息，早点睡觉。',rep:{t:'daily'},upd:Date.now(),start:t0}];
+ S('r',R);try{localStorage.setItem('ec_seeded','1')}catch{}}
+function due(r,d){const p=r.rep||{t:'daily'};if(p.t==='once')return ds(d)===p.date;if(p.t==='daily')return true;if(p.t==='weekly')return(p.days||[]).includes(d.getDay());
+ const a=new Date(r.start+'T00:00'),b=new Date(ds(d)+'T00:00');const n=Math.round((b-a)/864e5);return n>=0&&n%(p.every||1)===0}
+const at=(r,d)=>{const[h,m]=r.time.split(':');const x=new Date(d);x.setHours(+h,+m,0,0);return x};
+const key=(r,d)=>r.id+'@'+ds(d);
+function today(){const d=new Date();return R.filter(r=>due(r,d)).sort((a,b)=>a.time<b.time?-1:1)}
+function speak(r){if(quiet()&&r.cat!=='med')return;try{if(r.audio){const a=new Audio(r.audio);a.volume=ST.vol;a.play().catch(()=>{});return}
+ if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(r.say||('现在是'+r.time.replace(':','点')+'分，'+r.title+'。完成后请点击确认。'));
+ u.lang='zh-CN';u.rate=ST.rate;u.volume=ST.vol;speechSynthesis.speak(u)}catch(e){}}
+function alertTextColor(hex){const n=parseInt(hex.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255;const L=0.2126*r+0.7152*g+0.0722*b;return L>0.45?'#1D1D1F':'#fff'}
+function fire(r,k){active={r,k,t0:Date.now(),last:Date.now()};const c=CATS[r.cat]||CATS.life,A=$('#alert');A.style.setProperty('--c',c[1]);A.style.color=alertTextColor(c[1]);
+ A.querySelector('.p1').textContent=c[0]+'提醒';A.querySelector('.big').textContent=r.time;A.querySelector('.ti').textContent=r.title;A.querySelector('.no').textContent=r.note||'';A.classList.add('on');A.classList.toggle('fl',!!ST.flash);$('#ok').focus();
+ $('#vh').textContent=(ST.vc?'也可以直接说“完成了”或“等一下”。':'')+(ST.key?'按空格键或回车键表示完成，按 N 键表示稍后。':'');speak(r);try{navigator.vibrate&&navigator.vibrate([400,200,400])}catch{}
+ try{if(Notification.permission==='granted')new Notification(r.title,{body:r.note||r.time,requireInteraction:true})}catch{}camStart()}
+function close(st,until){if(!active)return;LG[active.k]={rid:active.r.id,title:active.r.title,time:active.r.time,date:active.k.split('@')[1],st,ts:Date.now(),until,note:active.note||''};S('log',LG);
+ $('#alert').classList.remove('on','fl');camStop();try{active.lis&&active.lis.abort()}catch{}try{speechSynthesis.cancel()}catch{}active=null;native();sync();render()}
+function tick(){if(ST.role==='family')return;const now=new Date();
+ if(active){if(ST.flash)try{navigator.vibrate&&navigator.vibrate([500,200,500])}catch{}camLook();vconf();if(Date.now()-active.last>=ST.gap*6e4){active.last=Date.now();speak(active.r)}
+  if(Date.now()-active.t0>=ST.timeout*6e4)close('missed');return}
+ for(const r of today()){const k=key(r,now),g=LG[k],t=at(r,now);if(r.pre>0&&!g&&now<t&&t-now<=r.pre*6e4&&!PRE[k]){PRE[k]=1;toast(r.pre+'分钟后：'+r.title);say(r.pre+'分钟后，'+r.title+'，请做好准备')}
+  if(!g&&now>=t&&now-t<6e4*30){fire(r,k);return}
+  if(!g&&now-t>=6e4*30){LG[k]={rid:r.id,title:r.title,time:r.time,date:ds(now),st:'missed',ts:Date.now()};S('log',LG)}
+  if(g&&g.st==='snoozed'&&Date.now()>=g.until){fire(r,k);return}}}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('item')){e.target.click();return}
+ if(!active||!ST.key||['BUTTON','INPUT','SELECT'].includes(e.target.tagName))return;if(e.key===' '||e.key==='Enter'){e.preventDefault();close('done')}else if(e.key==='n'||e.key==='N'||e.key==='Escape')close('snoozed',Date.now()+6e5)});
+$('#alert').addEventListener('click',e=>{if(ST.tap&&active&&!e.target.closest('button'))close('done')});
+$('#ok').onclick=()=>close('done');$('#sn').onclick=()=>close('snoozed',Date.now()+10*6e4);
+/* 离线中文解析：不联网、不需要 Key。支持 明天/后天/今天/下周X/每天/每周、早上/上午/下午/晚上、X点/点半/X点Y分。
+   解析不到时间返回 null；只填时间与事项，不推断药物剂量。 */
+function parseNL(t){if(!t)return null;t=t.replace(/二十/g,'20').replace(/三十/g,'30').replace(/十二/g,'12').replace(/十一/g,'11').replace(/十/g,'10').replace(/一/g,'1').replace(/二/g,'2').replace(/三/g,'3').replace(/四/g,'4').replace(/五/g,'5').replace(/六/g,'6').replace(/七/g,'7').replace(/八/g,'8').replace(/九/g,'9');const now=new Date();let d=new Date(now),rep='once',days=[];
+ const wk={'日':0,'天':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6};
+ let m=t.match(/大后天/)?3:t.match(/后天/)?2:t.match(/明天/)?1:t.match(/今天/)?0:null;
+ if(m!==null){d.setDate(d.getDate()+m)}
+ else if(/每天|天天|每日/.test(t)){rep='daily'}
+ else{const wm=t.match(/下周([日天一二三四五六])/);if(wm){const want=wk[wm[1]];let add=(want-now.getDay()+7)%7||7;d.setDate(d.getDate()+add)}
+  else{const wm2=t.match(/每周([日天一二三四五六])/);if(wm2){rep='weekly';days=[wk[wm2[1]]]}}}
+ let hour=null,min=0;const tm=t.match(/(\d{1,2})[:：](\d{1,2})/);
+ if(tm){hour=+tm[1];min=+tm[2]}
+ else{const hm=t.match(/(\d{1,2})点半/);const hm2=t.match(/(\d{1,2})点(\d{1,2})分?/);const hm3=t.match(/(\d{1,2})点/);
+  if(hm){hour=+hm[1];min=30}else if(hm2){hour=+hm2[1];min=+hm2[2]}else if(hm3){hour=+hm3[1]}}
+ if(hour===null)return null;
+ if(/下午|晚上|傍晚/.test(t)&&hour<12)hour+=12;
+ if(/凌晨|半夜/.test(t)&&hour===12)hour=0;
+ if(hour>23||min>59)return null;
+ let title=t.replace(/明天|后天|大后天|今天|下周[日天一二三四五六]|每周[日天一二三四五六]|每天|天天|每日/g,'')
+  .replace(/\d{1,2}[:：]\d{1,2}|\d{1,2}点半|\d{1,2}点\d{1,2}分?|\d{1,2}点/g,'')
+  .replace(/早上|上午|中午|下午|晚上|傍晚|凌晨|半夜/g,'')
+  .replace(/提醒我|提醒|请|帮我|记得/g,'').replace(/去|要/g,'').trim();
+ if(!title)title='提醒';
+ let cat='life';if(/吃药|服药|药/.test(title+t))cat='med';else if(/早餐|午餐|晚餐|吃饭|喝水|吃早饭|吃午饭|吃晚饭/.test(title+t))cat='meal';else if(/散步|运动|走路|活动/.test(title+t))cat='move';
+ const date=ds(d);
+ return{title:title.slice(0,60),time:String(hour).padStart(2,'0')+':'+String(min).padStart(2,'0'),cat,rep,days,date}}
+const LLM=new URLSearchParams(location.search).get('llm');
+async function ai(messages,max=300,json=false){const a=(LLM&&!ST.ai.url)?{url:LLM,key:'',model:'local'}:ST.ai;if(!a.url||!a.model)throw new Error('请先在 更多→设置 里填写 AI 接口（本机模型可留空密钥）');
+ const r=await fetch(a.url.replace(/\/$/,'')+'/chat/completions',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},a.key?{Authorization:'Bearer '+a.key}:{}),body:JSON.stringify(Object.assign({model:a.model,messages,max_tokens:max,temperature:0},json?{response_format:{type:'json_object'}}:{}))});
+ if(!r.ok)throw new Error('AI 接口返回 '+r.status);return(await r.json()).choices[0].message.content}
+const jparse=t=>JSON.parse(t.replace(/```json|```/g,'').trim());
+let cam=null;
+async function camStart(){if(!ST.cam||cam)return;const vt=$('#vt');try{const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:320}}),v=document.createElement('video');v.srcObject=s;v.muted=true;v.playsInline=true;await v.play();
+ cam={s,v,c:document.createElement('canvas'),prev:null,ai:0};cam.c.width=64;cam.c.height=48;vt.textContent='视觉跟踪中'}catch{vt.textContent='摄像头不可用'}}
+function camStop(){if(cam){cam.s.getTracks().forEach(t=>t.stop());cam=null}$('#vt').textContent='';$('#ok').style.outline=''}
+function camLook(){if(!cam||!active)return;const x=cam.c.getContext('2d');x.drawImage(cam.v,0,0,64,48);const d=x.getImageData(0,0,64,48).data;let df=0;
+ if(cam.prev)for(let i=0;i<d.length;i+=16)df+=Math.abs(d[i]-cam.prev[i]);cam.prev=d;if(df/(d.length/16)>6&&!ST.ai.url)$('#vt').textContent='看到您在活动';
+ if(ST.ai.url&&ST.ai.model&&ST.aiShot&&Date.now()-cam.ai>15000){cam.ai=Date.now();const a=active,f=document.createElement('canvas');f.width=320;f.height=240;f.getContext('2d').drawImage(cam.v,0,0,320,240);
+  ai([{role:'user',content:[{type:'text',text:`这是提醒“${a.r.title}”响起时的摄像头画面。只返回JSON：{"present":画面里是否有人,"doing":是否正在做这件事,"note":"十个字内描述"}`},{type:'image_url',image_url:{url:f.toDataURL('image/jpeg',.6)}}]}],120)
+  .then(t=>{if(active!==a)return;const o=jparse(t);a.note=o.note||'';$('#vt').textContent=!o.present?'没看到您，再次提醒':o.doing?'看起来已完成，请点“我已经完成”':'看到您了';if(!o.present)a.last=0;if(o.doing)$('#ok').style.outline='6px solid #FFD60A'}).catch(()=>{})}}
+const LN=()=>window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications;
+async function native(){const n=LN();if(!n||ST.role==='family')return;try{const p=await n.requestPermissions();if(p.display!=='granted')return;
+ const pd=await n.getPending();if(pd.notifications.length)await n.cancel({notifications:pd.notifications});
+ const now=new Date(),out=[];for(let i=0;i<14;i++){const d=new Date(now);d.setDate(d.getDate()+i);for(const r of R){if(!due(r,d))continue;const t=at(r,d);if(t<=now)continue;const g=LG[key(r,d)];if(g&&g.st==='done')continue;
+  out.push({title:r.title,body:r.note||'该做这件事了',schedule:{at:t,allowWhileIdle:true}});if(r.pre>0&&t-r.pre*6e4>now)out.push({title:r.pre+'分钟后：'+r.title,body:'请做好准备',schedule:{at:new Date(t-r.pre*6e4),allowWhileIdle:true}})}}
+ out.sort((a,b)=>a.schedule.at-b.schedule.at);const l=out.slice(0,60).map((o,i)=>({...o,id:i+1}));if(l.length)await n.schedule({notifications:l})}catch(e){}}
+const quiet=()=>{if(!ST.qon)return false;const n=new Date(),m=n.getHours()*60+n.getMinutes(),f=x=>{const[a,b]=x.split(':');return+a*60+ +b},a=f(ST.qs),b=f(ST.qe);return a<=b?m>=a&&m<b:m>=a||m<b};
+function listen(on,end){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return null;const r=new SR();r.lang='zh-CN';r.onresult=e=>on(e.results[0][0].transcript);r.onend=end||(()=>{});r.onerror=()=>{};try{r.start()}catch{return null}return r}
+function vconf(){if(!ST.vc||!active||active.lis||(window.speechSynthesis&&speechSynthesis.speaking))return;const a=active;
+ a.lis=listen(t=>{if(active!==a)return;if(/稍后|等一下|等会|晚点|一会/.test(t))close('snoozed',Date.now()+10*6e4);else if(/完成|好了|吃了|吃过|喝了|做了|确认/.test(t)){a.note=(a.note||'')+' 语音确认';close('done')}},()=>{a.lis=null})}
+function week(){const o=[],now=new Date();for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);let t=0,n=0;for(const r of R){if(!due(r,d)||at(r,d)>now||ds(d)<r.start)continue;t++;if(LG[key(r,d)]&&LG[key(r,d)].st==='done')n++}o.push({l:WD[d.getDay()],t,n})}return o}
+function weekBars(){return`<div style="display:flex;gap:8px;align-items:flex-end;height:130px;margin:12px 0">${week().map(x=>`<div style="flex:1;text-align:center;font-size:.8rem"><div style="height:${x.t?Math.max(6,x.n/x.t*80):6}px;background:${x.t&&x.n===x.t?'var(--g)':'var(--line)'};border-radius:6px"></div>${x.t?x.n+'/'+x.t:'-'}<br>周${x.l}</div>`).join('')}</div>`}
+function calls(){const l=FM.filter(f=>f.phone);return l.length?`<h2>联系家人</h2><div class="row">${l.map(f=>`<a class="call" href="tel:${esc(f.phone)}">📞 ${esc(f.name)}</a>`).join('')}</div>`:''}
+function clean(x){const T=/^\d\d:\d\d$/;if(!x||!x.id||!x.title||!T.test(x.time))return null;const p=x.rep||{t:'daily'};
+ return{id:String(x.id).slice(0,64),title:String(x.title).slice(0,60),time:x.time,cat:CATS[x.cat]?x.cat:'life',note:String(x.note||'').slice(0,120),say:String(x.say||'').slice(0,120),who:String(x.who||'').slice(0,20),
+  rep:{t:['daily','weekly','custom','once'].includes(p.t)?p.t:'daily',days:(p.days||[]).map(Number).filter(n=>n>=0&&n<7),every:Math.max(1,+p.every||1),date:String(p.date||'').slice(0,10)},audio:String(x.audio||'').startsWith('data:audio')?x.audio:'',imp:!!x.imp,pre:Math.min(60,Math.max(0,+x.pre||0)),upd:+x.upd||0,start:/^\d{4}-\d\d-\d\d$/.test(x.start)?x.start:ds(new Date())}}
+let syncing=false;
+async function sync(){const c=ST.sv;if(!c||!c.url||!c.code||syncing)return false;syncing=true;let ok=false;try{const p=c.pushed||0,t0=Date.now(),
+ body={since:c.ts||0,r:R.filter(x=>(x.upd||0)>=p),del:DEL.filter(x=>x.upd>=p),logs:Object.fromEntries(Object.entries(LG).filter(([,g])=>g.ts>=p))};
+ const res=await fetch(c.url.replace(/\/$/,'')+'/api/sync',{method:'POST',headers:{'Content-Type':'application/json','X-Code':c.code},body:JSON.stringify(body)});if(!res.ok)throw 0;const j=await res.json();let ch=false;const ids=new Map(R.map((x,i)=>[x.id,i]));
+ for(const x of j.r||[]){const k=clean(x);if(!k)continue;const i=ids.get(k.id);if(i===undefined){R.push(k);ch=true}else if((R[i].upd||0)<k.upd){R[i]=k;ch=true}}
+ for(const d of j.del||[]){const i=R.findIndex(x=>x.id===d.id);if(i>=0&&(R[i].upd||0)<=d.upd){R.splice(i,1);ch=true}}
+ for(const[k,g]of Object.entries(j.logs||{})){if(g&&(!LG[k]||LG[k].ts<g.ts)){LG[k]={rid:String(g.rid),title:String(g.title).slice(0,60),time:String(g.time),date:String(g.date),st:['done','missed','snoozed','help'].includes(g.st)?g.st:'missed',ts:+g.ts,until:+g.until||0,note:String(g.note||'').slice(0,60)};ch=true}}
+ c.ts=j.ts;c.pushed=t0;S('r',R);S('log',LG);S('set',ST);if(ch){native();if(view==='today'||view==='log')render()}ok=true}catch{}syncing=false;return ok}
+let PRE={},cap=null;
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',6000)}
+function sayNow(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=ST.rate;u.volume=1;speechSynthesis.speak(u)}catch{}}
+function say(t){if(quiet())return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=ST.rate;u.volume=ST.vol;speechSynthesis.speak(u)}catch{}}
+function help(){const n=new Date(),k='help@'+n.getTime();LG[k]={rid:'help',title:'呼叫家人',time:pad(n.getHours())+':'+pad(n.getMinutes()),date:ds(n),st:'help',ts:n.getTime()};S('log',LG);sayNow('我需要帮助，请联系我的家人');
+ sync().then(ok=>toast(ST.sv.code?(ok?'已通知家人':'没有联网，请直接打电话给家人'):'未连接家人，请直接打电话给家人'))}
+function capToggle(){const b=$('#capbtn'),o=$('#capout');if(cap){const c=cap;cap=null;c.stop();b.textContent='开始听写';return}const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('此设备不支持语音转文字');return}
+ const r=new SR();r.lang='zh-CN';r.continuous=true;r.interimResults=true;let fin='';r.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)fin+=e.results[i][0].transcript+'\n';else t+=e.results[i][0].transcript}o.textContent=(fin+t).slice(-600)};
+ r.onend=()=>{if(cap===r){try{r.start()}catch{}}};r.onerror=()=>{};cap=r;try{r.start()}catch{}b.textContent='停止听写'}
+function helpBanner(){if(ST.role!=='family')return'';const h=Object.values(LG).filter(x=>x.st==='help'&&x.ts>Date.now()-864e5).sort((a,b)=>b.ts-a.ts)[0];return h?`<div class="item" style="--c:#b3261e;cursor:default"><div class="n"><b style="font-size:1.3rem">⚠ ${esc(h.time)} 老人在呼叫求助</b><small>请尽快联系；紧急情况请拨打当地急救电话</small></div></div>`:''}
+function V_aac(){return`<h1>沟通</h1><button class="d" id="help" style="width:100%;min-height:96px;font-size:1.5rem">🆘 呼叫家人</button>
+ <h2>常用语（点一下就读出来）</h2><div class="row" style="gap:10px">${ST.phr.map((p,i)=>`<button data-say="${i}" style="flex:1 1 45%;min-height:84px;font-size:1.3rem">${esc(p)}</button>`).join('')}</div>
+ <h2>打字说话</h2><textarea id="tt" rows="2" placeholder="输入想说的话"></textarea><button class="p" id="tts" style="width:100%;margin-top:10px">🔊 读出来</button>
+ <h2>听写字幕（把别人说的话变成大字）</h2><button id="capbtn" style="width:100%">${cap?'停止听写':'开始听写'}</button><div id="capout" style="font-size:2rem;line-height:1.5;min-height:6em;margin-top:12px;white-space:pre-wrap"></div>
+ <details><summary>管理常用语</summary>${ST.phr.map((p,i)=>`<div class="row" style="align-items:center;margin:6px 0"><span style="flex:3">${esc(p)}</span><button class="d" data-pdel="${i}" style="flex:1">删除</button></div>`).join('')}<div class="row"><input id="pn" placeholder="新增常用语" maxlength="30"><button id="pa" style="flex:0 0 auto">添加</button></div></details>${calls()}`}
+function stTag(r){const g=LG[key(r,new Date())];if(!g)return'';return`<span class="st ${g.st}">${{done:'已完成',missed:'未确认',snoozed:'稍后提醒'}[g.st]}</span>`}
+function V_today(){return helpBanner()+V_today0()+calls()}
+function V_today0(){const d=new Date(),l=today(),nx=l.find(r=>!LG[key(r,d)]&&at(r,d)>d);
+ return`<h1>今天是星期${WD[d.getDay()]}</h1>${ST.sr?'<button id="rd" style="width:100%;margin-bottom:12px">🔊 读出今天的安排</button>':''}<div class="next">${nx?`下一项提醒<b>${nx.time}</b>${esc(nx.title)}`:'今天没有更多提醒了<b>✓</b>'}<br><small>${ST.vol?'语音提醒已开启':'语音已静音'}</small></div>
+ <h2>今天的安排</h2>${l.map(r=>`<div class="item" role="button" tabindex="0" data-edit="${r.id}" style="--c:${(CATS[r.cat]||CATS.life)[1]}"><span class="t">${r.time}</span><div class="n">${esc(r.title)}<small>${(CATS[r.cat]||CATS.life)[0]}${r.note?' · '+esc(r.note):''}${r.who?' · 来自'+esc(r.who):''}</small></div>${stTag(r)}
+ ${LG[key(r,d)]?.st==='missed'?`<button data-late="${r.id}">补充确认</button>`:''}</div>`).join('')||'<div class="empty">还没有提醒<br><button class="p" data-go="edit">＋ 添加第一条</button></div>'}`}
+function V_edit(){const r=R.find(x=>x.id===editId)||{title:'',time:'09:00',cat:'med',rep:{t:'daily'},note:'',who:'',say:''},p=r.rep||{t:'daily'};
+ return`<h1>${editId?'修改提醒':'添加提醒'}</h1>
+ ${editId?'':`<div class="row chips">${[['med','吃药','09:00'],['meal','吃饭','12:00'],['move','散步','16:00'],['life','办事','10:00']].map(([c,t,tm])=>`<button data-tpl="${c}|${t}|${tm}">${t}</button>`).join('')}</div>`}
+ ${editId?'':`<label>说一句话，AI 帮您填写</label><div class="row"><input id="nl" placeholder="例如：明天早上八点提醒我去医院"><button id="nl_mic" style="flex:0 0 auto" aria-label="语音输入">🎤</button><button id="nl_go" style="flex:0 0 auto">AI 填写</button></div>`}
+ <label>做什么</label><input id="f_title" value="${esc(r.title)}" placeholder="例如：吃药">
+ <label>几点</label><input id="f_time" class="tm" type="time" value="${r.time}">
+ <p style="color:var(--sub);margin:8px 0 0">默认每天提醒，语音自动播报。</p>
+ <details><summary>更多选项（重复、录音、家人）</summary>
+ <label>类型</label><select id="f_cat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${r.cat===k?'selected':''}>${v[0]}</option>`).join('')}</select>
+ <label>备注（服药请按医嘱）</label><input id="f_note" value="${esc(r.note)}">
+ <label style="display:flex;gap:10px;align-items:center"><input id="f_imp" type="checkbox" style="width:28px;min-height:28px" ${r.imp?'checked':''}>重要提醒（未确认时通知家人）</label>
+ <label>提前预告（给行动不便的人留出准备时间）</label><select id="f_pre">${[0,5,10,15,30].map(n=>`<option value="${n}" ${(r.pre||0)===n?'selected':''}>${n?'提前 '+n+' 分钟':'不预告'}</option>`).join('')}</select>
+ <label>重复</label><select id="f_rt"><option value="daily" ${p.t==='daily'?'selected':''}>每天</option><option value="weekly" ${p.t==='weekly'?'selected':''}>每周指定日</option><option value="custom" ${p.t==='custom'?'selected':''}>每隔几天</option><option value="once" ${p.t==='once'?'selected':''}>只提醒一次</option></select>
+ <div class="days" id="f_days">${[...WD].map((c,i)=>`<label><input type="checkbox" value="${i}" ${(p.days||[]).includes(i)?'checked':''}>周${c}</label>`).join('')}</div>
+ <div id="f_dt"><label>日期</label><input id="f_date" type="date" value="${p.date||ds(new Date())}"></div><div id="f_ev"><label>每隔几天</label><input id="f_every" type="number" min="1" value="${p.every||2}"></div>
+ <label>语音内容（留空则自动播报）</label><input id="f_say" value="${esc(r.say)}">
+ <label>设置人</label><select id="f_who"><option value="">本人</option>${FM.map(f=>`<option ${r.who===f.name?'selected':''}>${esc(f.name)}</option>`).join('')}</select>
+ <label>家人录音${r.audio?'（已录制）':''}</label><div class="row"><button id="f_rec">开始录音</button><button id="f_clr" class="d">删除录音</button></div><audio id="f_pl" controls style="width:100%;margin-top:8px;${r.audio?'':'display:none'}" ${r.audio?`src="${r.audio}"`:''}></audio></details>
+ <div class="row" style="margin-top:22px"><button class="p" id="f_save" style="min-height:72px;font-size:1.3rem">保存</button>${editId?'<button class="d" id="f_del" style="min-height:72px">删除</button>':''}</div>`}
+function V_more(){return`<h1>更多</h1><p style="color:var(--sub)">安心提醒 EasyCare v1.3.0 · 数据保存在本机 · 不是紧急医疗监护设备</p>${[['family','家人关怀','登记家人、查看谁设置了提醒'],['log','提醒记录','已完成和未确认的历史'],['set','设置','字号、音量、高对比度']].map(([v,t,d])=>`<div class="item" role="button" tabindex="0" data-go="${v}" style="--c:var(--g)"><div class="n"><b style="font-size:1.3rem">${t}</b><small>${d}</small></div>›</div>`).join('')}`}
+function V_family(){return`<h1>家人关怀</h1><p>家人可在这里登记姓名，并在“添加提醒”里选择设置人。远程同步需要后端服务，v1 为同机/离线模式。</p>
+ ${FM.map(f=>`<div class="item" style="--c:#1f5f4a"><div class="n">${esc(f.name)}<small>已设置 ${R.filter(r=>r.who===f.name).length} 条提醒${f.phone?' · '+esc(f.phone):''}</small></div><button class="d" data-fdel="${f.id}">移除</button></div>`).join('')||'<div class="empty">还没有登记家人</div>'}
+ <label>家人姓名</label><input id="fn" placeholder="例如：女儿小林"><label>电话（可选，今天页面可一键拨打）</label><input id="fp" type="tel"><button class="p" id="fadd" style="margin-top:12px">添加家人</button>`}
+function V_log(){const a=Object.values(LG).sort((x,y)=>y.ts-x.ts).slice(0,100),n=a.filter(x=>x.st==='done').length;
+ return`<h1>提醒记录</h1><p>近 ${a.length} 条，已完成 ${n} 条。“未确认”不等于没有完成。</p>${weekBars()}${a.map(x=>`<div class="item" style="--c:#999"><span class="t">${x.time}</span><div class="n">${esc(x.title)}<small>${x.date}${x.note?' · AI：'+esc(x.note):''}</small></div><span class="st ${x.st}">${{done:'已完成',missed:'未确认',snoozed:'稍后提醒',help:'呼叫求助'}[x.st]}</span></div>`).join('')||'<div class="empty">暂无记录</div>'}`}
+function V_set(){return`<h1>设置</h1><label>字号</label><select id="s_fs">${[[1,'标准'],[1.25,'大'],[1.5,'特大']].map(([v,t])=>`<option value="${v}" ${ST.fs==v?'selected':''}>${t}</option>`).join('')}</select>
+ <label>高对比度</label><select id="s_hc"><option value="0">关闭</option><option value="1" ${ST.hc?'selected':''}>开启</option></select>
+ <label>语音音量 (0 为静音)</label><input id="s_vol" type="range" min="0" max="1" step=".1" value="${ST.vol}"><label>语速</label><input id="s_rate" type="range" min=".5" max="1.2" step=".05" value="${ST.rate}">
+ <label>未确认时重复播报间隔（分钟）</label><input id="s_gap" type="number" min="1" value="${ST.gap}">
+ <div class="row" style="margin-top:14px"><button id="s_test">试听语音</button><button id="s_note">开启系统通知</button></div>
+ <h2>无障碍与特殊需求</h2>
+ ${[['big','超大按钮（手抖、手指不灵活）',ST.big],['flash','闪屏加强震动提醒（听障）',ST.flash],['sr','显示“读出今天的安排”按钮（视障）',ST.sr],['key','键盘或开关确认：空格/回车=完成，N=稍后',ST.key],['tap','点屏幕任意位置确认提醒（行动或手部不便）',ST.tap],['aac','显示“沟通”页：常用语、打字说话、听写字幕、呼叫家人（言语或听力障碍）',ST.aac]].map(([k,t,v])=>`<label>${t}</label><select id="a_${k}"><option value="0">关闭</option><option value="1" ${v?'selected':''}>开启</option></select>`).join('')}
+ <p style="color:var(--sub)">闪屏为每秒一次的彩色与白色交替，光敏性癫痫患者请勿开启。震动仅部分安卓设备支持。</p>
+ <label>家人锁（设置后，进入“添加”和“更多”需先输入密码，适合记忆或认知障碍）</label><div class="row"><input id="s_pin" type="password" inputmode="numeric" maxlength="8" placeholder="数字密码，留空为取消"><button id="s_pinok" style="flex:0 0 auto">保存</button></div>
+ <p style="color:var(--sub)">密码只存在本机，是防误触的辅助锁，不是安全加密。</p>
+ <label>语音确认（说“完成了”或“等一下”）</label><select id="s_vc"><option value="0">关闭</option><option value="1" ${ST.vc?'selected':''}>开启</option></select>
+ <label>夜间安静时段（服药提醒不静音）</label><div class="row"><select id="s_qon"><option value="0">关闭</option><option value="1" ${ST.qon?'selected':''}>开启</option></select><input id="s_qs" type="time" value="${ST.qs}"><input id="s_qe" type="time" value="${ST.qe}"></div>
+ <h2>家庭同步</h2><label>我是</label><select id="s_role"><option value="elder">老人（本机响铃提醒）</option><option value="family" ${ST.role==='family'?'selected':''}>家人（远程设置、查看完成情况）</option></select>
+ <label>我的称呼（家人填写，显示在提醒上）</label><input id="s_me" value="${esc(ST.me||'')}"><label>服务器地址</label><input id="s_sv" value="${esc(ST.sv.url)}" placeholder="https://你的服务器">
+ <label>家庭码（老人和家人的设备填同一个）</label><input id="s_code" value="${esc(ST.sv.code)}"><div class="row" style="margin-top:12px"><button id="s_mk">创建新家庭码</button><button id="s_sync">立即同步</button></div>
+ <label>未确认通知地址（ntfy 主题，家人手机订阅）</label><input id="s_nt" placeholder="https://ntfy.sh/你的主题"><button id="s_ntok" style="margin-top:8px">保存通知地址</button>
+ <p style="color:var(--sub)">家人在“添加”里勾选“重要提醒”，老人 15 分钟未确认时，服务器会推送通知。老人的手机需联网并保持应用运行才会同步。</p>
+ <h2>备份与家人代设</h2><div class="row"><button id="s_exp">导出提醒文件</button><button id="s_imp">导入提醒文件</button></div><input id="s_file" type="file" accept=".json" hidden>
+ <p style="color:var(--sub)">家人在自己的设备上设置好，导出文件发给老人，老人导入即可合并，不会覆盖已有提醒。</p>
+ <h2>视觉跟踪</h2><select id="s_cam"><option value="0">关闭</option><option value="1" ${ST.cam?'selected':''}>提醒响起时开启摄像头</option></select>
+ <p style="color:var(--sub)">仅在提醒响起期间使用摄像头，画面不保存。已配置 AI 时，会把缩小后的截图发送给下方 AI 服务，用来判断“是否有人、是否在做这件事”；结果只作参考，仍需本人点“我已经完成”。</p>
+ <h2>AI 接口（OpenAI 兼容）</h2>${LLM&&!ST.ai.url?'<p style="color:var(--g);font-weight:700">本机内置小模型已启用（无需联网，用于“说一句话建提醒”）。</p>':''}<label>接口地址</label><input id="s_url" value="${esc(ST.ai.url)}" placeholder="https://api.openai.com/v1">
+ <label>密钥</label><input id="s_key" type="password" value="${esc(ST.ai.key)}"><label>模型（需支持图片）</label><input id="s_model" value="${esc(ST.ai.model)}" placeholder="gpt-4o-mini">
+ <label>AI 截图判断（默认关闭，开启后才会在提醒响起时把缩小截图发给上方 AI 服务）</label><select id="s_shot"><option value="0">关闭</option><option value="1" ${ST.aiShot?'selected':''}>开启</option></select>
+ <button id="s_ai" style="margin-top:12px">测试连接</button><p style="color:var(--sub)">密钥仅保存在本机。不配置 AI 时，视觉跟踪只做本地动作检测，不联网。</p>
+ <p style="color:var(--sub)">提示：iOS 网页版在锁屏/后台时无法保证准时提醒，请保持应用在前台，或使用桌面版。本软件不是紧急医疗监护设备。</p>`}
+function render(){document.body.className=(ST.hc?'hc ':'')+(ST.big?'big':'');document.documentElement.style.setProperty('--fs',ST.fs);
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===view||(b.dataset.v==='more'&&['family','log','set'].includes(view))));$('#app').innerHTML=(['family','log','set'].includes(view)?'<button class="back" data-go="more">‹ 返回</button>':'')+{today:V_today,aac:V_aac,edit:V_edit,more:V_more,family:V_family,log:V_log,set:V_set}[view]();bind()}
+let unl=0;
+function gate(){return new Promise(res=>{if(!ST.pin||Date.now()<unl)return res(true);const d=$('#pd');$('#pin').value='';$('#perr').textContent='';d.showModal();
+ $('#pok').onclick=()=>{if($('#pin').value===ST.pin){unl=Date.now()+3e5;d.close();res(true)}else $('#perr').textContent='密码不对'};$('#pno').onclick=()=>{d.close();res(false)};d.oncancel=()=>res(false)})}
+async function go(v){if(!['today','aac'].includes(v)&&!(await gate()))return;view=v;if(v!=='edit')editId=null;render()}
+function readToday(){try{const d=new Date(),l=today(),t='今天星期'+WD[d.getDay()]+'。'+(l.length?l.map(r=>r.time.replace(':','点')+'分，'+r.title+(LG[key(r,d)]&&LG[key(r,d)].st==='done'?'，已完成':'')).join('。'):'今天没有提醒。');
+ speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=ST.rate;u.volume=1;speechSynthesis.speak(u)}catch{}}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{editId=null;go(b.dataset.v)});
+function bind(){if(cap&&view!=='aac'){const c=cap;cap=null;try{c.stop()}catch{}}$('#navaac').style.display=ST.aac?'':'none';const q=(s,f)=>{const e=$(s);if(e)e.onclick=f};q('#rd',readToday);
+ if(view==='aac'){q('#help',help);q('#tts',()=>{const t=$('#tt').value.trim();if(t)sayNow(t)});q('#capbtn',capToggle);
+  document.querySelectorAll('[data-say]').forEach(b=>b.onclick=()=>sayNow(ST.phr[+b.dataset.say]));
+  document.querySelectorAll('[data-pdel]').forEach(b=>b.onclick=()=>{ST.phr.splice(+b.dataset.pdel,1);S('set',ST);render()});
+  q('#pa',()=>{const t=$('#pn').value.trim().slice(0,30);if(t){ST.phr.push(t);S('set',ST);render()}})}
+ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{editId=null;go(b.dataset.go)});
+ document.querySelectorAll('[data-tpl]').forEach(b=>b.onclick=()=>{const[c,t,tm]=b.dataset.tpl.split('|');$('#f_title').value=t;$('#f_cat').value=c;$('#f_time').value=tm;document.querySelectorAll('[data-tpl]').forEach(x=>x.classList.toggle('on',x===b))});
+ document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{editId=b.dataset.edit;go('edit')});
+ document.querySelectorAll('[data-late]').forEach(b=>b.onclick=e=>{e.stopPropagation();const r=R.find(x=>x.id===b.dataset.late);LG[key(r,new Date())]={rid:r.id,title:r.title,time:r.time,date:ds(new Date()),st:'done',ts:Date.now()};S('log',LG);sync();render()});
+ document.querySelectorAll('[data-fdel]').forEach(b=>b.onclick=()=>{FM=FM.filter(f=>f.id!==b.dataset.fdel);S('fam',FM);render()});
+ q('#fadd',()=>{const n=$('#fn').value.trim();if(n){FM.push({id:crypto.randomUUID(),name:n,phone:$('#fp').value.trim()});S('fam',FM);render()}});
+ if(view==='edit'){let audio=(R.find(x=>x.id===editId)||{}).audio||'';const sync=()=>{const t=$('#f_rt').value;$('#f_days').style.display=t==='weekly'?'':'none';$('#f_ev').style.display=t==='custom'?'':'none';$('#f_dt').style.display=t==='once'?'':'none'};$('#f_rt').onchange=sync;sync();
+  q('#f_rec',async()=>{const b=$('#f_rec');if(rec){rec.stop();return}try{const s=await navigator.mediaDevices.getUserMedia({audio:true}),ch=[];rec=new MediaRecorder(s);rec.ondataavailable=e=>ch.push(e.data);
+   rec.onstop=()=>{s.getTracks().forEach(t=>t.stop());const fr=new FileReader();fr.onload=()=>{audio=fr.result;const p=$('#f_pl');p.src=audio;p.style.display='';b.textContent='重新录音'};fr.readAsDataURL(new Blob(ch,{type:rec.mimeType}));rec=null};rec.start();b.textContent='停止录音';setTimeout(()=>rec&&rec.stop(),30000)}catch{alert('无法使用麦克风，请检查权限')}});
+  q('#nl_mic',()=>{const b=$('#nl_mic');b.textContent='听…';if(!listen(t=>{$('#nl').value=t;$('#nl_go').click()},()=>{b.textContent='🎤'})){b.textContent='🎤';alert('此设备不支持语音输入')}});
+  q('#nl_go',async()=>{const t=$('#nl').value.trim(),b=$('#nl_go');if(!t)return;
+   const off=parseNL(t);
+   if(off){$('#f_title').value=off.title;$('#f_time').value=off.time;if(CATS[off.cat])$('#f_cat').value=off.cat;const rt=off.rep;$('#f_rt').value=rt;$('#f_rt').onchange();
+    if(off.date)$('#f_date').value=off.date;document.querySelectorAll('#f_days input').forEach(c=>c.checked=(off.days||[]).includes(+c.value));if(rt!=='daily')$('details').open=true;b.textContent='已用离线解析填好，请核对后保存';return}
+   b.textContent='思考中…';try{const n=new Date();
+   const sys=`日期对照：${[0,1,2,3,4,5,6,7].map(i=>{const d=new Date(n);d.setDate(d.getDate()+i);return(['今天','明天','后天'][i]||'')+ds(d)+'周'+WD[d.getDay()]}).join('；')}。把用户的话转成提醒，只返回JSON：{"title":"简短事项","time":"HH:MM","cat":"med|meal|move|life","rep":"daily|weekly|once","days":[周日为0的数字],"date":"YYYY-MM-DD，仅once"}。不要推断药物剂量。`;
+   let o;try{o=jparse(await ai([{role:'system',content:sys},{role:'user',content:t}],300,true))}catch(e){o=jparse(await ai([{role:'system',content:sys},{role:'user',content:t}],300,false))}
+   $('#f_title').value=o.title||'';$('#f_time').value=o.time||'09:00';if(CATS[o.cat])$('#f_cat').value=o.cat;const rt=['daily','weekly','once'].includes(o.rep)?o.rep:'daily';$('#f_rt').value=rt;$('#f_rt').onchange();
+   if(o.date)$('#f_date').value=o.date;document.querySelectorAll('#f_days input').forEach(c=>c.checked=(o.days||[]).includes(+c.value));if(rt!=='daily')$('details').open=true;b.textContent='已填好，请核对后保存'}catch(e){b.textContent='AI 填写';alert(e.message)}});
+  q('#f_clr',()=>{audio='';$('#f_pl').style.display='none'});
+  q('#f_del',()=>{if(!confirm('确定删除这条提醒吗？'))return;DEL.push({id:editId,upd:Date.now()});S('del',DEL);R=R.filter(x=>x.id!==editId);S('r',R);native();sync();go('today')});
+  q('#f_save',()=>{const t=$('#f_title').value.trim();if(!t){alert('请填写提醒内容');$('#f_title').focus();return}const rt=$('#f_rt').value,rep={t:rt};
+   if(rt==='weekly'){rep.days=[...document.querySelectorAll('#f_days input:checked')].map(c=>+c.value);if(!rep.days.length){alert('请至少选择一天');return}}if(rt==='once')rep.date=$('#f_date').value||ds(new Date());if(rt==='custom')rep.every=Math.max(1,+$('#f_every').value||1);
+   if(audio&&audio.length>1200000){alert('这条录音太长了，请重新录一段 30 秒以内的');return}
+   const used=R.reduce((a,x)=>a+((x.audio||'').length),0);if(audio&&used+audio.length>2000000){alert('录音总容量快满了，请先删除旧提醒上的录音');return}
+   const o={id:editId||crypto.randomUUID(),title:t,time:$('#f_time').value||'08:00',cat:$('#f_cat').value,note:$('#f_note').value,say:$('#f_say').value,who:$('#f_who').value||(ST.role==='family'?(ST.me||'家人'):''),imp:$('#f_imp').checked,pre:+$('#f_pre').value||0,upd:Date.now(),rep,audio,start:(R.find(x=>x.id===editId)||{}).start||ds(new Date())};
+   R=editId?R.map(x=>x.id===editId?o:x):[...R,o];S('r',R);native();sync();go('today')})}
+ if(view==='set'){const u=()=>S('set',ST);$('#s_fs').onchange=e=>{ST.fs=+e.target.value;u();render()};$('#s_hc').onchange=e=>{ST.hc=e.target.value==='1';u();render()};
+  $('#s_vol').onchange=e=>{ST.vol=+e.target.value;u()};$('#s_rate').onchange=e=>{ST.rate=+e.target.value;u()};$('#s_gap').onchange=e=>{ST.gap=Math.max(1,+e.target.value||2);u()};
+  const U=p=>ST.sv.url.replace(/\/$/,'')+p,reset=()=>{ST.sv.ts=0;ST.sv.pushed=0};
+  ['big','flash','sr','key','tap','aac'].forEach(k=>$('#a_'+k).onchange=e=>{ST[k]=e.target.value==='1';u();render()});
+  q('#s_pinok',()=>{ST.pin=$('#s_pin').value.trim().replace(/\D/g,'');u();unl=Date.now()+3e5;alert(ST.pin?'家人锁已设置':'家人锁已取消')});
+  $('#s_role').onchange=e=>{ST.role=e.target.value;u()};$('#s_me').onchange=e=>{ST.me=e.target.value.trim().slice(0,20);u()};$('#s_sv').onchange=e=>{ST.sv.url=e.target.value.trim();reset();u()};$('#s_code').onchange=e=>{ST.sv.code=e.target.value.trim().toUpperCase();reset();u();sync()};
+  q('#s_mk',async()=>{try{const r=await fetch(U('/api/house'),{method:'POST'}),j=await r.json();ST.sv.code=j.code;reset();u();alert('家庭码：'+j.code+'\n请记下，并在老人和家人的设备上填同一个。');render();sync()}catch{alert('无法连接服务器，请检查服务器地址')}});
+  q('#s_sync',async()=>{alert((await sync())?'已同步':'同步失败，请检查服务器地址和家庭码')});
+  q('#s_ntok',async()=>{try{const r=await fetch(U('/api/notify'),{method:'POST',headers:{'Content-Type':'application/json','X-Code':ST.sv.code},body:JSON.stringify({url:$('#s_nt').value.trim()})}),j=await r.json();alert(r.ok?'已保存':(j.error||'失败'))}catch{alert('无法连接服务器')}});
+  $('#s_vc').onchange=e=>{ST.vc=e.target.value==='1';u()};$('#s_qon').onchange=e=>{ST.qon=e.target.value==='1';u()};['qs','qe'].forEach(k=>$('#s_'+k).onchange=e=>{ST[k]=e.target.value||ST[k];u()});
+  q('#s_exp',async()=>{const f=new File([JSON.stringify({v:1,r:R,fam:FM})],'easycare-reminders.json',{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch{}}const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;a.click()});
+  q('#s_imp',()=>$('#s_file').click());$('#s_file').onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text()),ids=new Set(R.map(x=>x.id));let n=0;(j.r||[]).forEach(x=>{const c=clean(x);if(c&&!ids.has(c.id)){R.push(c);n++}});
+   (j.fam||[]).forEach(f=>{if(f&&f.id&&f.name&&!FM.some(y=>y.id===f.id))FM.push({id:String(f.id),name:String(f.name).slice(0,20),phone:String(f.phone||'').slice(0,20)})});S('r',R);S('fam',FM);native();alert('已导入 '+n+' 条提醒')}catch{alert('文件无法读取')}};
+  $('#s_cam').onchange=e=>{ST.cam=e.target.value==='1';u()};
+  ['url','key','model'].forEach(k=>$('#s_'+k).onchange=e=>{ST.ai[k]=e.target.value.trim();u()});
+  $('#s_shot').onchange=e=>{ST.aiShot=e.target.value==='1';u()};
+  q('#s_ai',async()=>{try{await ai([{role:'user',content:'回复：好'}],10);alert('连接成功')}catch(e){alert('连接失败：'+e.message)}});
+  q('#s_test',()=>speak({time:'09:00',title:'该吃药了'}));q('#s_note',()=>{try{Notification.requestPermission()}catch{}})}}
+render();setInterval(tick,5e3);tick();native();sync();setInterval(sync,3e4);document.addEventListener('visibilitychange',()=>{if(!document.hidden){native();sync()}});
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js');
+</script></body></html>
