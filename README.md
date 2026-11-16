@@ -12,6 +12,16 @@
 - 桌面开发：`npm install && npm start`（Electron，Windows / macOS / Linux）。
 - 家庭同步服务：`npm run server`（Node 18+，零依赖，默认 8787 端口，同时托管网页版），或用 Docker（见下）。
 
+## 界面截图
+
+![今天](docs/screenshots/01-today.png)
+![添加提醒](docs/screenshots/02-add.png)
+![沟通](docs/screenshots/03-aac.png)
+![更多](docs/screenshots/04-more.png)
+![家人关怀](docs/screenshots/05-family.png)
+![设置](docs/screenshots/06-settings.png)
+![提醒响起](docs/screenshots/07-fire.png)
+
 ## 打包（需在对应系统上构建）
 
 - Windows 安装包：`npm run build:win` → `dist/`
