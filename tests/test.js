@@ -1,4 +1,4 @@
-// EasyCare v1.3.0 tests: load the real web/index.html inline script in a
+// EasyCare v1.4.0 tests: load the real web/index.html inline script in a
 // stubbed browser environment and exercise its real functions.
 // Run: npm test   (node tests/test.js)
 const fs = require('fs');
@@ -26,7 +26,7 @@ const store = {};
 const fetchCalls = [];
 const sandbox = {
   console, URL, URLSearchParams,
-  setInterval: () => 0, setTimeout: (fn) => 0, clearInterval: () => {},
+  setInterval: () => 0, setTimeout: (fn) => 0, clearInterval: () => {}, clearTimeout: () => {}, AbortController,
   localStorage: {
     getItem: (k) => (k in store ? store[k] : null),
     setItem: (k, v) => { store[k] = String(v); },
@@ -58,7 +58,7 @@ const sandbox = {
 sandbox.window = sandbox;
 sandbox.globalThis = sandbox;
 vm.createContext(sandbox);
-const code = m[1] + '\n;globalThis.__T={parseNL,due,clean,at,ds,ai,alertTextColor,getR:()=>R,getST:()=>ST};';
+const code = m[1] + '\n;globalThis.__T={parseNL,due,clean,at,ds,ai,alertTextColor,cnNum,jparse,normTime,week,getR:()=>R,getST:()=>ST,getLG:()=>LG,setR:v=>{R=v},setLG:v=>{LG=v}};';
 vm.runInContext(code, sandbox, { filename: 'index-inline.js' });
 const T = sandbox.__T;
 
@@ -122,6 +122,63 @@ ok('clean: missing title -> null', T.clean({ id: 'a', title: '', time: '09:00' }
 const c = T.clean({ id: 'a', title: '吃药', time: '09:00', cat: 'med', audio: 'https://evil/x.mp3' });
 eq('clean: strips non-data audio', c.audio, '');
 eq('clean: keeps cat', c.cat, 'med');
+
+
+// --- v1.4.0: parseNL regressions (these were real bugs in v1.3.0) ---
+const dow = (d) => new Date(d + 'T00:00').getDay();
+o = T.parseNL('每周一九点吃药');
+eq('v14 nl: 每周一九点 -> weekly Mon 09:00', o && [o.rep, o.days, o.time], ['weekly', [1], '09:00']);
+o = T.parseNL('每周一三五早上八点散步');
+eq('v14 nl: 每周一三五 -> days 1,3,5', o && [o.rep, o.days, o.time], ['weekly', [1, 3, 5], '08:00']);
+o = T.parseNL('下周三十点去医院');
+ok('v14 nl: 下周三十点 -> a Wednesday 10:00', o && o.time === '10:00' && dow(o.date) === 3);
+o = T.parseNL('下周一十点去医院');
+ok('v14 nl: 下周一 title keeps 去医院', o && o.title === '去医院' && dow(o.date) === 1);
+eq('v14 nl: 二十三点半 -> 23:30', (T.parseNL('二十三点半休息') || {}).time, '23:30');
+eq('v14 nl: 八点三十 -> 08:30', (T.parseNL('八点三十吃药') || {}).time, '08:30');
+eq('v14 nl: 两点 recognised', (T.parseNL('下午两点复诊') || {}).time, '14:00');
+eq('v14 nl: 晚上十二点 -> 00:00', (T.parseNL('晚上十二点睡觉') || {}).time, '00:00');
+eq('v14 nl: 一起 not turned into 1起', (T.parseNL('一起去散步八点') || {}).title, '一起去散步');
+eq('v14 nl: 10:30 digits', (T.parseNL('10:30吃药') || {}).time, '10:30');
+eq('v14 nl: 明晚七点 -> 19:00 tomorrow', (T.parseNL('明晚七点打电话给女儿') || {}).time, '19:00');
+eq('v14 nl: 工作日 -> Mon-Fri', (T.parseNL('工作日早上七点半吃药') || {}).days, [1, 2, 3, 4, 5]);
+{ const before = Date.now(), r1 = T.parseNL('十五分钟后吃药'), want = new Date(before + 15 * 6e4);
+  ok('v14 nl: 十五分钟后 -> about now+15min', r1 && Math.abs((+r1.time.slice(0, 2) * 60 + +r1.time.slice(3)) - (want.getHours() * 60 + want.getMinutes())) <= 1); }
+{ const r2 = T.parseNL('提醒我晚点吃饭'); eq('v14 nl: no clock time -> null', r2, null); }
+{ const n = new Date(), past = new Date(n.getTime() - 3600e3), hh = past.getHours(), r3 = T.parseNL(hh + ':' + pad2(past.getMinutes()) + '吃药');
+  eq('v14 nl: time already passed today -> tomorrow', r3 && r3.date, ds(new Date(n.getTime() + 864e5))); }
+eq('v14 cnNum: 二十三', T.cnNum('二十三'), 23); eq('v14 cnNum: 十五', T.cnNum('十五'), 15); eq('v14 cnNum: 两', T.cnNum('两'), 2);
+
+// --- v1.4.0: safety / validation ---
+ok('v14 clean: id with quote/space stripped (no HTML injection)', T.clean({ id: 'a" onmouseover="x', title: 't', time: '09:00' }).id === 'aonmouseoverx');
+eq('v14 clean: audio with quote rejected', T.clean({ id: 'a', title: 't', time: '09:00', audio: 'data:audio/webm;base64,AAAA" onerror="x' }).audio, '');
+eq('v14 clean: real recording format kept', T.clean({ id: 'a', title: 't', time: '09:00', audio: 'data:audio/webm;codecs=opus;base64,AAAA' }).audio, 'data:audio/webm;codecs=opus;base64,AAAA');
+ok('v14 clean: 24:30 rejected', T.clean({ id: 'a', title: 't', time: '24:30' }) === null);
+eq('v14 clean: keeps paused + from', (() => { const c = T.clean({ id: 'a', title: 't', time: '09:00', paused: 1, from: 123 }); return [c.paused, c.from]; })(), [true, 123]);
+ok('v14 due: paused reminder never due', !T.due({ ...base, rep: { t: 'daily' }, paused: true }, monday));
+eq('v14 jparse: JSON wrapped in chatter', T.jparse('好的，结果如下：{"a":1} 希望有帮助'), { a: 1 });
+eq('v14 normTime: 9:5 -> 09:05', T.normTime('9:5'), '09:05'); eq('v14 normTime: 25:00 -> empty', T.normTime('25:00'), '');
+{ const R0 = T.getR(); // 新建时已过去的时间不补响 / 不计入“未确认”
+  const n = new Date(), t0 = new Date(n.getTime() - 3600e3), hhmm = pad2(t0.getHours()) + ':' + pad2(t0.getMinutes());
+  if (ds(t0) === ds(n)) {
+    T.setR([{ id: 'late', title: '新建', time: hhmm, cat: 'life', rep: { t: 'daily' }, start: ds(n), from: Date.now(), upd: 1 }]);
+    const wk = T.week(); eq('v14 from: today not counted as missed for a just-created reminder', wk[wk.length - 1].t, 0);
+    T.setR([{ id: 'late', title: '新建', time: hhmm, cat: 'life', rep: { t: 'daily' }, start: ds(n), from: 0, upd: 1 }]);
+    ok('v14 from: without from the same reminder is counted today', T.week()[6].t === 1);
+  } else { pass += 2; console.log('ok   (skipped near midnight)'); }
+  T.setR(R0);
+}
+{ const es = fs.readFileSync(path.join(__dirname, '..', 'electron', 'main.js'), 'utf8');
+  ok('v14 electron: close hides to tray instead of quitting', es.includes("e.preventDefault();win.hide()") && !es.includes("window-all-closed"));
+  ok('v14 electron: login item only when packaged', es.includes("if(app.isPackaged)app.setLoginItemSettings"));
+  ok('v14 electron: navigation locked to file:', es.includes("setWindowOpenHandler") && es.includes("will-navigate"));
+  ok('v14 electron: preload exists', fs.existsSync(path.join(__dirname, '..', 'electron', 'preload.js')));
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'web', 'sw.js'), 'utf8');
+  ok('v14 sw: network-first + skips /api/', sw.includes("fetch(r).then") && sw.includes("/api/"));
+  const html2 = fs.readFileSync(path.join(__dirname, '..', 'web', 'index.html'), 'utf8');
+  ok('v14 ui: local repeat-toggle no longer shadows network sync()', !/const sync=\(\)=>\{const t=\$\('#f_rt'\)/.test(html2) && html2.includes('togRep'));
+  ok('v14 ui: camera closed if alert dismissed before permission granted', html2.includes('camBusy') && html2.includes('if(!active){st.getTracks()'));
+}
 
 // --- local LLM (v1.2.0): keyless, ?llm= param, json mode ---
 (async () => {
