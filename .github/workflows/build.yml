@@ -1,0 +1,28 @@
+# 注意：请在 GitHub 网页上手动上传此文件，不要用应用推送 .github/workflows/（会因权限被拒绝）。
+name: build
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install
+      - run: npm test
+      - run: npm run test:ui
+      - run: npm run test:e2e
+  build-win:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install
+      - run: npm run build:win
+      - uses: actions/upload-artifact@v4
+        with: { name: windows-installer, path: dist/ }
