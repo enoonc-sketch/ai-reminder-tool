@@ -13,7 +13,7 @@ if(!app.requestSingleInstanceLock()){app.quit()}else{
  app.on('second-instance',showWin);
  app.on('before-quit',()=>{quitting=true});
  app.whenReady().then(()=>{powerSaveBlocker.start('prevent-app-suspension');
-  win=new BrowserWindow({width:960,height:800,title:'安心提醒 EasyCare',webPreferences:{backgroundThrottling:false,contextIsolation:true,sandbox:true,preload:path.join(__dirname,'preload.js')}});
+  win=new BrowserWindow({width:1120,height:800,minWidth:960,minHeight:640,title:'安心提醒 EasyCare',webPreferences:{backgroundThrottling:false,contextIsolation:true,sandbox:true,preload:path.join(__dirname,'preload.js')}});
   win.setMenuBarVisibility(false);
   win.loadFile(path.join(__dirname,'..','web','index.html'),startLLM()?{query:{llm:'http://127.0.0.1:'+PORT+'/v1'}}:{});
   // 本程序只加载本地页面：不允许跳转或新开窗口到别处

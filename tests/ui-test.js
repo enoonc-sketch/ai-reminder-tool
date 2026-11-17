@@ -19,6 +19,9 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  for(const v of ['today','aac','edit','more','family','log','set']){
   try{w.eval(`view='${v}';editId=null;render()`);ok('render '+v+' ('+d.querySelector('#app').innerHTML.length+' chars)',d.querySelector('#app').innerHTML.length>100)}catch(e){ok('render '+v+' '+e.message,false)}}
  w.eval("view='today';render()");
+ // 倒计时只在“还有下一项”时渲染；半夜跑测试时 5 条种子提醒都已过去，#cd 不存在。用 10 分钟后的一条提醒让检查与时间无关（跨午夜则取 23:59）
+ const n2=new Date(),mins=n2.getHours()*60+n2.getMinutes()+10,fh=mins<1440?String(Math.floor(mins/60)).padStart(2,'0')+':'+String(mins%60).padStart(2,'0'):'23:59';
+ w.eval(`R=[{id:'nx1',title:'稍后',time:'${fh}',cat:'life',rep:{t:'daily'},start:ds(new Date()),upd:1}];LG={};view='today';render()`);
  ok('today shows countdown span',!!d.querySelector('#cd'));
  console.log('  countdown text:',d.querySelector('#cd')&&d.querySelector('#cd').textContent);
  // pause one reminder -> appears in paused section, not due
@@ -89,5 +92,9 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   w.eval(`ST.cam=true;R=[{id:'c1',title:'t',time:'00:00',cat:'life',rep:{t:'daily'},start:ds(new Date()),upd:1}];LG={};camStart()`);
   w.eval(`active={r:R[0],k:'c1@x',t0:Date.now(),last:Date.now()}`);w.eval("close('done')");resolveGum();await sleep(20);
   ok('camera stream stopped when alert already closed',stopped===1&&w.eval('cam')===null)}
+ // --- v1.4.1: desktop layout (Apple style sidebar, mobile untouched) ---
+ ok('desktop media query present',/@media \(min-width:900px\)/.test(html));
+ ok('sidebar brand in nav, still 4 nav buttons',!!d.querySelector('nav .brand')&&d.querySelectorAll('nav button').length===4);
+ ok('desktop rules: sidebar offset + compact density',/padding:0 0 0 232px/.test(html)&&/\.item\{min-height:64px/.test(html));
  ok('no runtime errors overall',errs.length===0||(console.log(errs),false));
  process.exit(0)})();

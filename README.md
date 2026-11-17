@@ -1,4 +1,4 @@
-# AI提醒工具 · 安心提醒 EasyCare v1.4.0
+# AI提醒工具 · 安心提醒 EasyCare v1.4.1
 
 离线优先的老人提醒软件：大字全屏视觉提醒 + 中文语音 + 家人录音，数据保存在本机。
 
@@ -21,6 +21,14 @@
 ![家人关怀](docs/screenshots/05-family.png)
 ![设置](docs/screenshots/06-settings.png)
 ![提醒响起](docs/screenshots/07-fire.png)
+
+### 电脑版（v1.4.1 新布局：左侧边栏）
+
+![电脑版今天](docs/screenshots/08-desktop-today.png)
+![电脑版添加提醒](docs/screenshots/09-desktop-add.png)
+![电脑版修改提醒](docs/screenshots/10-desktop-edit.png)
+![电脑版更多](docs/screenshots/11-desktop-more.png)
+![电脑版设置](docs/screenshots/12-desktop-settings.png)
 
 ## 打包（需在对应系统上构建）
 
@@ -103,17 +111,17 @@
 
 ## 测试
 
-`npm test`：47 项，覆盖种子数据、离线中文解析、重复规则（每天 / 每周 / 每隔 N 天 / 单次）、输入校验、本地小模型免密钥调用与 JSON 模式、get-llm.js 官方下载源、Electron 路径守卫、提前预告、沟通常用语。另有 `node tests/server-test.js` 11 项：启动同步服务器实测建家庭码、推 / 拉提醒、错码 401、通知白名单、服务器截断、呼叫求助记录同步。
+`npm test`：83 项 + 服务器 22 项；另有 `npm run test:ui` 38 项（jsdom 加载真实页面，渲染全部页面，走完提醒响起 / 稍后 / 完成 / 超时、保存、离线解析填表、摄像头竞态）、`npm run test:e2e` 8 项（老人 + 家人两个页面经真实同步服务器：同步、编辑、删除、求助、未确认、防复活）。全量 151 项通过。
 
 ## 发布到 GitHub
 
 1. 在 GitHub 新建仓库（库房名 `AI提醒工具`，仓库地址 `enoonc-sketch/ai-reminder-tool`），不要勾选自动生成文件。
 2. 把本源码包解压后推送（不要用应用推送 `.github/workflows/`，会因权限被拒绝；工作流文件在 `.github/workflows/build.yml`，请在网页上手动上传）。
-3. 打 tag `v1.3.0` 可触发打包（见工作流）。
+3. 打 tag `v1.4.1` 可触发打包（见工作流）。
 
 ## 版本
 
-见 `CHANGELOG.md`。当前版本 v1.3.0。
+见 `CHANGELOG.md`。当前版本 v1.4.1。
 
 ## 许可证
 

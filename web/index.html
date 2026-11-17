@@ -8,9 +8,9 @@ body.hc{--bg:#000;--ink:#fff;--sub:#ddd;--g:#FFD60A;--card:#111;--line:#fff}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom))}
 main{max-width:720px;margin:0 auto;padding:16px}
 h1{font-size:1.7rem;margin:.3em 0}h2{font-size:1.2rem;margin:1.2em 0 .4em}
-.next{background:var(--g);color:#fff;border-radius:20px;padding:20px}body.hc .next{color:#000}
+.next{background:var(--g);color:#fff;border-radius:20px;padding:20px;box-shadow:0 8px 24px rgba(0,122,255,.28)}body.hc .next{color:#000}
 .next b{font-size:3rem;display:block}
-.item{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:16px;padding:16px;margin:12px 0;min-height:72px;cursor:pointer}
+.item{display:flex;gap:14px;align-items:center;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:16px;padding:16px;margin:12px 0;min-height:72px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
 .item .t{font-size:1.6rem;font-weight:700;min-width:4.2em}.item .n{flex:1}.item small{color:var(--sub);display:block}
 .st{font-size:.9rem;padding:4px 10px;border-radius:99px;border:2px solid var(--line)}.st.done{background:#D9F7E3;color:#1E7A34}.st.missed{background:#FFE9E7;color:var(--red)}
 button,select,input,textarea{font:inherit;color:inherit}
@@ -18,6 +18,7 @@ button{min-height:60px;padding:0 22px;border-radius:14px;border:2px solid var(--
 button.p{background:var(--g);color:#fff}body.hc button.p{color:#000}button.d{border-color:var(--red);color:var(--red)}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:4px solid #007AFF;outline-offset:2px}
 nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:2px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.brand{display:none}
 nav button{flex:1;border:0;border-radius:0;min-height:68px;background:none}nav button.on{color:var(--g);box-shadow:inset 0 4px var(--g)}
 label{display:block;margin:12px 0 4px;font-weight:700}input,select,textarea{width:100%;min-height:56px;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
 .row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.days label{display:inline-flex;align-items:center;gap:4px;margin:4px 8px 4px 0;font-weight:400}.days input{width:24px;min-height:24px}
@@ -33,9 +34,26 @@ body.big button{min-height:88px;font-size:1.25rem}body.big nav button{min-height
 @keyframes fl{0%,49.9%{background:var(--c);color:#fff}50%,100%{background:#fff;color:#111}}#alert.fl{animation:fl 1s steps(1) infinite}#alert.fl button{border:3px solid #111}
 #toast{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;right:12px;background:var(--g);color:#fff;padding:16px;border-radius:14px;font-size:1.3rem;font-weight:700;z-index:20;display:none;text-align:center}body.hc #toast{color:#000}.st.help{background:#fde1df;color:var(--red)}
 .back{border:0;background:none;color:var(--g);padding:0;min-height:48px}.empty button{margin-top:12px}.empty{padding:24px;text-align:center;color:var(--sub);border:2px dashed var(--line);border-radius:14px}
+/* 电脑版（宽屏）：左侧边栏 + 更紧凑的密度，手机版完全不动。苹果风：浅色半透明边栏、圆角选中态、卡片淡阴影 */
+@media (min-width:900px){
+ body{padding:0 0 0 232px}
+ main{max-width:860px;padding:28px 32px 48px}
+ .brand{display:block;padding:6px 14px 20px}
+ .brand b{display:block;font-size:1.25rem}
+ .brand span{color:var(--sub);font-size:.85rem}
+ nav{top:0;bottom:0;left:0;right:auto;width:232px;flex-direction:column;justify-content:flex-start;align-items:stretch;padding:20px 12px;border-top:0;border-right:1px solid var(--line);gap:2px}
+ nav button{flex:none;min-height:48px;border-radius:12px;text-align:left;padding:0 14px;font-size:1rem}
+ nav button.on{box-shadow:inset 3px 0 var(--g);background:rgba(0,122,255,.10)}
+ button{min-height:44px;padding:0 18px}
+ input,select,textarea{min-height:44px}
+ .item{min-height:64px;padding:14px 18px}
+ .next{padding:24px 28px}.next b{font-size:2.5rem}
+ #toast{left:50%;right:auto;transform:translateX(-50%);width:min(560px,calc(100vw - 48px))}
+ h1{margin:.2em 0 .6em}
+}
 </style></head><body>
 <main id="app"></main>
-<nav><button data-v="today">今天</button><button data-v="edit">＋ 添加</button><button data-v="aac" id="navaac">沟通</button><button data-v="more">更多</button></nav>
+<nav><div class="brand"><b>安心提醒</b><span>EasyCare</span></div><button data-v="today">今天</button><button data-v="edit">＋ 添加</button><button data-v="aac" id="navaac">沟通</button><button data-v="more">更多</button></nav>
 <dialog id="pd"><label for="pin">家人密码</label><input id="pin" type="password" inputmode="numeric" maxlength="8"><p id="perr" style="color:var(--red);min-height:1.5em"></p><div class="row"><button class="p" id="pok">确定</button><button id="pno">取消</button></div></dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="alert" role="alertdialog" aria-modal="true" aria-labelledby="alti" aria-live="assertive"><div class="p1"></div><div class="big"></div><div class="ti" id="alti"></div><p class="no"></p><p id="vh" style="font-size:1.1rem;opacity:.85;margin:0"></p><p id="vt" style="font-size:1.3rem;min-height:1.6em;margin:0"></p>
@@ -229,7 +247,7 @@ function V_edit(){const r=R.find(x=>x.id===editId)||{title:'',time:'09:00',cat:'
  <label>设置人</label><select id="f_who"><option value="">本人</option>${FM.map(f=>`<option ${r.who===f.name?'selected':''}>${esc(f.name)}</option>`).join('')}</select>
  <label>家人录音${r.audio?'（已录制）':''}</label><div class="row"><button id="f_rec">开始录音</button><button id="f_clr" class="d">删除录音</button></div><audio id="f_pl" controls style="width:100%;margin-top:8px;${r.audio?'':'display:none'}" ${r.audio?`src="${esc(r.audio)}"`:''}></audio></details>
  <div class="row" style="margin-top:22px"><button class="p" id="f_save" style="min-height:72px;font-size:1.3rem">保存</button>${editId?'<button class="d" id="f_del" style="min-height:72px">删除</button>':''}</div>`}
-function V_more(){return`<h1>更多</h1><p style="color:var(--sub)">安心提醒 EasyCare v1.4.0 · 数据保存在本机 · 不是紧急医疗监护设备</p>${[['family','家人关怀','登记家人、查看谁设置了提醒'],['log','提醒记录','已完成和未确认的历史'],['set','设置','字号、音量、高对比度']].map(([v,t,d])=>`<div class="item" role="button" tabindex="0" data-go="${v}" style="--c:var(--g)"><div class="n"><b style="font-size:1.3rem">${t}</b><small>${d}</small></div>›</div>`).join('')}`}
+function V_more(){return`<h1>更多</h1><p style="color:var(--sub)">安心提醒 EasyCare v1.4.1 · 数据保存在本机 · 不是紧急医疗监护设备</p>${[['family','家人关怀','登记家人、查看谁设置了提醒'],['log','提醒记录','已完成和未确认的历史'],['set','设置','字号、音量、高对比度']].map(([v,t,d])=>`<div class="item" role="button" tabindex="0" data-go="${v}" style="--c:var(--g)"><div class="n"><b style="font-size:1.3rem">${t}</b><small>${d}</small></div>›</div>`).join('')}`}
 function V_family(){return`<h1>家人关怀</h1><p>家人可在这里登记姓名，并在“添加提醒”里选择设置人。想让家人在自己的手机上远程设置，请在“更多 → 设置 → 家庭同步”里连接同步服务。</p>
  ${FM.map(f=>`<div class="item" style="--c:#1f5f4a"><div class="n">${esc(f.name)}<small>已设置 ${R.filter(r=>r.who===f.name).length} 条提醒${f.phone?' · '+esc(f.phone):''}</small></div><button class="d" data-fdel="${esc(f.id)}">移除</button></div>`).join('')||'<div class="empty">还没有登记家人</div>'}
  <label>家人姓名</label><input id="fn" placeholder="例如：女儿小林"><label>电话（可选，今天页面可一键拨打）</label><input id="fp" type="tel"><button class="p" id="fadd" style="margin-top:12px">添加家人</button>`}
